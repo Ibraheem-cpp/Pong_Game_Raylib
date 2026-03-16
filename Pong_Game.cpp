@@ -8,11 +8,11 @@ const int width = 1280;
 
 class Ball {
 private:
-    int x_Coord;
-    int y_Coord;
+    float x_Coord;
+    float y_Coord;
     float radius;
-    int speed_x = 8;
-    int speed_y = 8;
+    float speed_x = 8;
+    float speed_y = 8;
 public:
     Ball() : x_Coord(10), y_Coord(10), radius(10.0) {};
     Ball(int x, int y, float z) : x_Coord(x), y_Coord(y), radius(z) {};
@@ -33,9 +33,24 @@ public:
         }
     }
 
-    int get_Y_Coord() const {
+    void reverse_direction() {
+        speed_x *= -1;
+    }
+
+    void set_X(float new_X) {
+        this->x_Coord = new_X;
+    }
+
+    float get_Y_Coord() const {
         return this->y_Coord;
     }
+    float get_X_Coord() const {
+        return this->x_Coord;
+    }
+    float get_rad() const {
+        return this->radius;
+    }
+
 };
 
 class Paddle {
@@ -44,13 +59,27 @@ protected:
     float Pos_Y;
     float Width;
     float Height;
-    int speed = 7;
+    float speed = 7;
 public:
     Paddle() : Pos_X(10), Pos_Y(10), Width(10), Height(20) {};
     Paddle(int Px, int Py, int w, int h) : Pos_X(Px), Pos_Y(Py), Width(w), Height(h) {};
 
     virtual void draw() = 0;
     virtual void update(int ball_y) = 0;
+
+    virtual bool detect_collision(const Ball& b) const = 0;
+
+    float get_X() const {
+        return this->Pos_X;
+    }
+    float get_Y() const {
+        return this->Pos_Y;
+    }
+    float get_width() const {
+        return this->Width;
+    }
+
+    virtual ~Paddle() {};
 };
 
 class player_paddle : public Paddle {
@@ -78,22 +107,31 @@ public:
         }
     }
 
+    bool detect_collision(const Ball& b) const override {
+        if ((b.get_X_Coord() + b.get_rad() >= this->Pos_X) && (b.get_Y_Coord() >= this->Pos_Y) && (b.get_Y_Coord() <= this->Height + this->Pos_Y)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    ~player_paddle() override {};
 };
 
 class AI_paddle : public Paddle {
 public:
     AI_paddle() : Paddle() {};
-    AI_paddle(int Px, int Py, int w, int h) : Paddle(Px, Py, w, h) {};
+    AI_paddle(int Px, int Py, int w, int h) : Paddle(Px, Py, w, h) { };
 
     void draw() override {
         DrawRectangle(this->Pos_X, this->Pos_Y, this->Width, this->Height, GREEN);
     }
 
     void update(int ball_y) override {
-        if (this->Pos_Y > ball_y) {
+        if (this->Pos_Y + this->Height / 2 > ball_y) {
             this->Pos_Y -= speed;
         }
-        if (this->Pos_Y <= ball_y) {
+        if (this->Pos_Y + this->Height / 2 <= ball_y) {
             this->Pos_Y += speed;
         }
 
@@ -104,6 +142,16 @@ public:
             this->Pos_Y = height - this->Height;
         }
     }
+
+    bool detect_collision(const Ball& b) const override {
+        if ((b.get_X_Coord() - b.get_rad() <= this->Pos_X + this->Width) && (b.get_Y_Coord() >= this->Pos_Y) && (b.get_Y_Coord() <= this->Height + this->Pos_Y)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    ~AI_paddle() override {};
 };
 
 int main()
@@ -118,14 +166,24 @@ int main()
 
     while (!WindowShouldClose()) {
 
+        //      Collision Detection
+        if (player->detect_collision(ball)) {
+            ball.reverse_direction();
+            ball.set_X(player->get_X() - ball.get_rad() - 1);
+        }
+        if (AI->detect_collision(ball)) {
+            ball.reverse_direction();
+            ball.set_X(AI->get_X() + AI->get_width() + ball.get_rad() + 1);
+        }
+
         //      Update
         ball.update();
         AI->update(ball.get_Y_Coord());
         player->update(ball.get_Y_Coord());
 
-        //      Drawing
-        ClearBackground(DARKBLUE);
+        //      Drawing 
         BeginDrawing();
+        ClearBackground(RED);
         DrawLine(width / 2, 0, width / 2, height, WHITE);
         ball.draw();
         AI->draw();
