@@ -58,7 +58,7 @@ public:
     Ball(int x, int y, float z) : x_Coord(x), y_Coord(y), radius(z) {};
 
     void draw() const {
-        DrawCircle(x_Coord, y_Coord, radius, GREEN);
+        DrawCircle(x_Coord, y_Coord, radius, YELLOW);
     }
 
     void update(Paddle* player, Paddle* cpu) {
@@ -109,7 +109,7 @@ public:
     player_paddle(int Px, int Py, int w, int h) : Paddle(Px, Py, w, h) {};
 
     void draw() override {
-        DrawRectangle(this->Pos_X, this->Pos_Y, this->Width, this->Height, GREEN);
+        DrawRectangleRounded(Rectangle{ this->Pos_X, this->Pos_Y, this->Width, this->Height }, 0.8, 0, GREEN);
     }
 
     void update(int ball_y) override {
@@ -145,7 +145,7 @@ public:
     AI_paddle(int Px, int Py, int w, int h) : Paddle(Px, Py, w, h) { };
 
     void draw() override {
-        DrawRectangle(this->Pos_X, this->Pos_Y, this->Width, this->Height, GREEN);
+        DrawRectangleRounded(Rectangle{ this->Pos_X, this->Pos_Y, this->Width, this->Height }, 0.8, 0, GREEN);
     }
 
     void update(int ball_y) override {
@@ -182,7 +182,7 @@ int main()
     SetTargetFPS(60);
     InitWindow(width, height, "Pong Game");
 
-    Ball ball(width / 2, height / 2, 15.0);
+    Ball ball(width / 2, height / 2, 12.0);
     Paddle* player = new player_paddle(width - 30, height / 2 - 50, 20, 100);
     Paddle* AI = new AI_paddle(10, height / 2 - 50, 20, 100);
 
@@ -206,12 +206,16 @@ int main()
         //      Drawing 
         BeginDrawing();
         ClearBackground(BLUE);
+        DrawRectangle(width / 2, 0, width / 2, height, DARKBLUE);
+        DrawCircle(width / 2, height / 2, 150, SKYBLUE);
+        DrawLine(width / 2 - 1, 0, width / 2, height, WHITE);
         DrawLine(width / 2, 0, width / 2, height, WHITE);
+        DrawLine(width / 2 + 1, 0, width / 2, height, WHITE);
         ball.draw();
         AI->draw();
         player->draw();
-        DrawText(TextFormat("%i", AI->get_score()),width/4-40,20,80,RED);
-        DrawText(TextFormat("%i", player->get_score()), (width / 4) * 3 - 40, 20, 80, RED);
+        DrawText(TextFormat("%i", AI->get_score()),width/4-20,20,80,RED);
+        DrawText(TextFormat("%i", player->get_score()), (width / 4) * 3 - 20, 20, 80, RED);
         EndDrawing();
     }
 
