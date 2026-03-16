@@ -6,6 +6,46 @@ using namespace std;
 const int height = 720;
 const int width = 1280;
 
+class Ball;
+
+class Paddle {
+protected:
+    float Pos_X;
+    float Pos_Y;
+    float Width;
+    float Height;
+    float speed = 7;
+    int score = 0;
+public:
+    Paddle() : Pos_X(10), Pos_Y(10), Width(10), Height(20) {};
+    Paddle(int Px, int Py, int w, int h) : Pos_X(Px), Pos_Y(Py), Width(w), Height(h) {};
+
+    virtual void draw() = 0;
+    virtual void update(int ball_y) = 0;
+
+    virtual bool detect_collision(const Ball& b) const = 0;
+
+    float get_X() const {
+        return this->Pos_X;
+    }
+    float get_Y() const {
+        return this->Pos_Y;
+    }
+    float get_width() const {
+        return this->Width;
+    }
+    int get_score() const {
+        return this->score;
+    }
+
+    void add_score() {
+        this->score++;
+    }
+
+    virtual ~Paddle() {};
+};
+
+
 class Ball {
 private:
     float x_Coord;
@@ -21,14 +61,24 @@ public:
         DrawCircle(x_Coord, y_Coord, radius, GREEN);
     }
 
-    void update() {
+    void update(Paddle* player, Paddle* cpu) {
         x_Coord += speed_x;
         y_Coord += speed_y;
 
         if (y_Coord + radius >= height || y_Coord - radius <= 0) {
             speed_y *= -1;
         }
-        if (x_Coord + radius >= width || x_Coord - radius <= 0) {
+
+        if (x_Coord + radius >= width) {
+            cpu->add_score();
+            x_Coord = float(width) / 2;
+            y_Coord = float(height) / 2;
+            speed_x *= -1;
+        }
+        if (x_Coord - radius <= 0) {
+            player->add_score();
+            x_Coord = float(width) / 2;
+            y_Coord = float(height) / 2;
             speed_x *= -1;
         }
     }
@@ -51,35 +101,6 @@ public:
         return this->radius;
     }
 
-};
-
-class Paddle {
-protected:
-    float Pos_X;
-    float Pos_Y;
-    float Width;
-    float Height;
-    float speed = 7;
-public:
-    Paddle() : Pos_X(10), Pos_Y(10), Width(10), Height(20) {};
-    Paddle(int Px, int Py, int w, int h) : Pos_X(Px), Pos_Y(Py), Width(w), Height(h) {};
-
-    virtual void draw() = 0;
-    virtual void update(int ball_y) = 0;
-
-    virtual bool detect_collision(const Ball& b) const = 0;
-
-    float get_X() const {
-        return this->Pos_X;
-    }
-    float get_Y() const {
-        return this->Pos_Y;
-    }
-    float get_width() const {
-        return this->Width;
-    }
-
-    virtual ~Paddle() {};
 };
 
 class player_paddle : public Paddle {
@@ -154,6 +175,7 @@ public:
     ~AI_paddle() override {};
 };
 
+
 int main()
 {
     
@@ -177,18 +199,19 @@ int main()
         }
 
         //      Update
-        ball.update();
+        ball.update(player,AI);
         AI->update(ball.get_Y_Coord());
         player->update(ball.get_Y_Coord());
 
         //      Drawing 
         BeginDrawing();
-        ClearBackground(RED);
+        ClearBackground(BLUE);
         DrawLine(width / 2, 0, width / 2, height, WHITE);
         ball.draw();
         AI->draw();
         player->draw();
-
+        DrawText(TextFormat("%i", AI->get_score()),width/4-40,20,80,RED);
+        DrawText(TextFormat("%i", player->get_score()), (width / 4) * 3 - 40, 20, 80, RED);
         EndDrawing();
     }
 
