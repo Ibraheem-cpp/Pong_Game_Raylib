@@ -26,6 +26,8 @@ public:
 
     virtual bool detect_collision(const Ball& b) const = 0;
 
+    virtual void reset() = 0;
+
     float get_X() const {
         return this->Pos_X;
     }
@@ -84,6 +86,13 @@ public:
         }
     }
 
+    void reset() {
+        this->x_Coord = float(width) / 2;
+        this->y_Coord = float(height) / 2;
+        speed_x = 8;
+        speed_y = 8;
+    }
+
     void reverse_direction() {
         speed_x *= -1;
     }
@@ -137,6 +146,12 @@ public:
         return false;
     }
 
+    void reset() override {
+        this->score = 0;
+        this->Pos_X = width - 30;
+        this->Pos_Y = height / 2 - 50;
+    }
+
     ~player_paddle() override {};
 };
 
@@ -173,6 +188,12 @@ public:
         return false;
     }
 
+    void reset() override {
+        this->score = 0;
+        this->Pos_X = 10;
+        this->Pos_Y = height / 2 - 50;
+    }
+
     ~AI_paddle() override {};
 };
 
@@ -182,49 +203,85 @@ int main()
     
     SetTargetFPS(60);
     InitWindow(width, height, "Pong Game");
+    SetExitKey(KEY_NULL);
 
     Ball ball(width / 2, height / 2, 12.0);
     Paddle* player = new player_paddle(width - 30, height / 2 - 50, 20, 100);
     Paddle* AI = new AI_paddle(10, height / 2 - 50, 20, 100);
 
-    while (!WindowShouldClose()) {
+    Texture2D menuBG = LoadTexture("assets/menuBG.png");
+
+    enum GameState {MENU, PLAYING, EXIT};
+    GameState state = MENU;
+    Button playButton(width / 2, height / 2, "PLAY", -70);
+    Button exitButton(width / 2, height / 2, "QUIT", 70);
+
+    while (!WindowShouldClose() && state != EXIT) {
 
         //      Collision Detection
-        if (player->detect_collision(ball)) {
-            ball.reverse_direction();
-            ball.set_X(player->get_X() - ball.get_rad() - 1);
-        }
-        if (AI->detect_collision(ball)) {
-            ball.reverse_direction();
-            ball.set_X(AI->get_X() + AI->get_width() + ball.get_rad() + 1);
+        if (state == MENU) {
+            if (playButton.isClicked()) {
+                state = PLAYING;
+                player->reset();
+                AI->reset();
+                ball.reset();
+            }
+            if (exitButton.isClicked()) {
+                state = EXIT;
+            }
         }
 
-        //      Update
-        ball.update(player,AI);
-        AI->update(ball.get_Y_Coord());
-        player->update(ball.get_Y_Coord());
+        if (state == PLAYING) {
+            if (IsKeyPressed(KEY_ESCAPE)) {
+                state = MENU;
+            }
+
+            if (player->detect_collision(ball)) {
+                ball.reverse_direction();
+                ball.set_X(player->get_X() - ball.get_rad() - 1);
+            }
+            if (AI->detect_collision(ball)) {
+                ball.reverse_direction();
+                ball.set_X(AI->get_X() + AI->get_width() + ball.get_rad() + 1);
+            }
+
+            //      Update
+            ball.update(player, AI);
+            AI->update(ball.get_Y_Coord());
+            player->update(ball.get_Y_Coord());
+
+        }
 
         //      Drawing 
+        
         BeginDrawing();
         ClearBackground(BLUE);
-        DrawRectangle(width / 2, 0, width / 2, height, DARKBLUE);
-        DrawCircle(width / 2, height / 2, 150, SKYBLUE);
-        DrawLine(width / 2 - 1, 0, width / 2, height, WHITE);
-        DrawLine(width / 2, 0, width / 2, height, WHITE);
-        DrawLine(width / 2 + 1, 0, width / 2, height, WHITE);
-        ball.draw();
-        AI->draw();
-        player->draw();
-        DrawText(TextFormat("%i", AI->get_score()),width/4-20,20,80,RED);
-        DrawText(TextFormat("%i", player->get_score()), (width / 4) * 3 - 20, 20, 80, RED);
+        if (state == MENU) {
+            DrawTexture(menuBG, 0, 0, WHITE);
+            playButton.Draw();
+            playButton.isHovering();
+            exitButton.Draw();
+            exitButton.isHovering();
+        }
+        if(state == PLAYING) {
+            DrawRectangle(width / 2, 0, width / 2, height, DARKBLUE);
+            DrawCircle(width / 2, height / 2, 150, SKYBLUE);
+            DrawLine(width / 2 - 1, 0, width / 2, height, WHITE);
+            DrawLine(width / 2, 0, width / 2, height, WHITE);
+            DrawLine(width / 2 + 1, 0, width / 2, height, WHITE);
+            ball.draw();
+            AI->draw();
+            player->draw();
+            DrawText(TextFormat("%i", AI->get_score()), width / 4 - 20, 20, 80, RED);
+            DrawText(TextFormat("%i", player->get_score()), (width / 4) * 3 - 20, 20, 80, RED);
+        }
         EndDrawing();
     }
 
-
-    CloseWindow();
-
     delete player;
     delete AI;
+    UnloadTexture(menuBG);
+    CloseWindow();
 
     return 0;
 }

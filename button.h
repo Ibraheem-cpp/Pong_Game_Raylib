@@ -25,16 +25,16 @@ private:
 
 public:
 	Button() {}
-	Button(float Px, float Py, string label) {
-		this->Px = Px;
-		this->Py = Py;
+	Button(float Px, float Py, string label, float heightOffset) {
 		this->label = label;
 		this->length = 200;
 		this->width = 100;
+		this->Px = Px - (this->length/2);
+		this->Py = Py - (this->width/ 2) + heightOffset;
 	}
 
 	void Draw() const {
-		DrawRectangleRounded({ this->Px, this->Py, this->length, this->width }, 0.5, 5, RED);
+		DrawRectangleRounded({ this->Px, this->Py, this->length, this->width }, 0.5, 5, BLACK);
 		int textSize = 50;
 		int textWidth = MeasureText(this->label.c_str(), textSize);
 		int posX = this->Px + this->length / 2 - textWidth / 2.0;
@@ -44,7 +44,7 @@ public:
 
 	void isHovering() {
 		if (isMouseOver()) {
-			DrawRectangleRounded({ this->Px, this->Py, this->length, this->width }, 0.5, 5, GOLD);
+			DrawRectangleRounded({ this->Px, this->Py, this->length, this->width }, 0.5, 5, DARKBLUE);
 			int textSize = 50;
 			int textWidth = MeasureText(this->label.c_str(), textSize);
 			int posX = this->Px + this->length / 2 - textWidth / 2.0;
@@ -59,4 +59,5 @@ public:
 		}
 		return false;
 	}
+
 };
