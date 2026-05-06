@@ -2,10 +2,11 @@ Title & Description : "**Pong Game** - a classic pong game built with Raylib and
 
 Features:
  1. Player vs AI gameplay.
- 2. Score tracking for both sides.
- 3. Collision detection with paddles and walls.
- 4. Styled court with center circle and dividing line.
- 5. Smooth rounded paddles.
+ 2. Main Menu.
+ 3. Score tracking for both sides.
+ 4. Collision detection with paddles and walls.
+ 5. Styled court with center circle and dividing line.
+ 6. Smooth rounded paddles.
 
 How to Compile and run:
 ```
@@ -30,6 +31,8 @@ Built with:
 2. Raylib
 ---
 **Screenshots**
+
+![Screenshot 3](screenshots/screenshot4.png)
 
 ![Screenshot 1](screenshots/screenshot1.png)
 
