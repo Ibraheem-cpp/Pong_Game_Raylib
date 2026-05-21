@@ -21,7 +21,7 @@ Controls:
 |  S  | Move Padddle down |
 
 OOP Design:
-1. Abstract Paddle class wiht vitual functions.
+1. Abstract Paddle class wiht virtual functions.
 2. **player_paddle** subclass-controlled by keyboard.
 3. **AI_paddle** subclass-automatically follows the ball.
 4. **Ball** class handles movement, collision and scoring.
